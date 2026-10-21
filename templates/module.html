@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<p class="eyebrow">MODUL {{ kind|upper }}</p>
+<h1>{{ 'Prediksi Jenis Cacat' if kind == 'supervised' else 'Segmentasi Karakteristik Cacat' }}</h1>
+<p>Masukkan 27 fitur numerik. Nilai contoh otomatis diambil dari median dataset, <strong>bukan</strong> pengukuran produk tertentu.</p>
+{% if not features %}
+<div class="notice">Menunggu schema dari Orang 2. Halaman form akan aktif setelah data diproses.</div>
+{% elif not ready %}
+<div class="notice">Schema sudah ada, tetapi model {{ kind }} belum dihasilkan.</div>
+{% endif %}
+{% if features %}
+<form id="prediction-form" data-kind="{{ kind }}">
+  <div class="form-grid">
+  {% for feature in features %}
+    <label>{{ feature }}
+      <input type="number" name="{{ feature }}" step="any" required value="{{ medians.get(feature, 0) }}">
+    </label>
+  {% endfor %}
+  </div>
+  <button type="submit">{{ 'Prediksi Jenis Cacat' if kind == 'supervised' else 'Cari Cluster' }}</button>
+</form>
+<pre id="result" class="result" aria-live="polite">Belum ada prediksi.</pre>
+{% endif %}
+{% if kind == 'supervised' %}
+<img class="plot" src="{{ url_for('static', filename='img/supervised_confusion_matrix.png') }}" alt="Confusion matrix supervised" onerror="this.style.display='none'">
+{% else %}
+<img class="plot" src="{{ url_for('static', filename='img/unsupervised_pca.png') }}" alt="PCA hasil clustering" onerror="this.style.display='none'">
+{% endif %}
+{% endblock %}
