@@ -1,0 +1,42 @@
+{
+  "rows": 1941,
+  "n_features": 27,
+  "missing_by_feature": {
+    "X_Minimum": 0,
+    "X_Maximum": 0,
+    "Y_Minimum": 0,
+    "Y_Maximum": 0,
+    "Pixels_Areas": 0,
+    "X_Perimeter": 0,
+    "Y_Perimeter": 0,
+    "Sum_of_Luminosity": 0,
+    "Minimum_of_Luminosity": 0,
+    "Maximum_of_Luminosity": 0,
+    "Length_of_Conveyer": 0,
+    "TypeOfSteel_A300": 0,
+    "TypeOfSteel_A400": 0,
+    "Steel_Plate_Thickness": 0,
+    "Edges_Index": 0,
+    "Empty_Index": 0,
+    "Square_Index": 0,
+    "Outside_X_Index": 0,
+    "Edges_X_Index": 0,
+    "Edges_Y_Index": 0,
+    "Outside_Global_Index": 0,
+    "LogOfAreas": 0,
+    "Log_X_Index": 0,
+    "Log_Y_Index": 0,
+    "Orientation_Index": 0,
+    "Luminosity_Index": 0,
+    "SigmoidOfAreas": 0
+  },
+  "class_counts": {
+    "Other_Faults": 673,
+    "Bumps": 402,
+    "K_Scatch": 391,
+    "Z_Scratch": 190,
+    "Pastry": 158,
+    "Stains": 72,
+    "Dirtiness": 55
+  }
+}
