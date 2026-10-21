@@ -1,0 +1,51 @@
+{
+  "algorithm": "KMeans",
+  "n_rows": 1941,
+  "n_features": 27,
+  "best_k": 2,
+  "candidates": [
+    {
+      "k": 2,
+      "inertia": 40517.091,
+      "silhouette": 0.2803
+    },
+    {
+      "k": 3,
+      "inertia": 35992.049,
+      "silhouette": 0.1893
+    },
+    {
+      "k": 4,
+      "inertia": 33031.263,
+      "silhouette": 0.1895
+    },
+    {
+      "k": 5,
+      "inertia": 30969.261,
+      "silhouette": 0.1902
+    },
+    {
+      "k": 6,
+      "inertia": 27072.626,
+      "silhouette": 0.1915
+    },
+    {
+      "k": 7,
+      "inertia": 25545.855,
+      "silhouette": 0.1941
+    },
+    {
+      "k": 8,
+      "inertia": 23884.857,
+      "silhouette": 0.204
+    }
+  ],
+  "silhouette": 0.2803,
+  "davies_bouldin": 1.2806,
+  "calinski_harabasz": 569.0076,
+  "cluster_counts": {
+    "1": 1551,
+    "0": 390
+  },
+  "adjusted_rand_index_external": 0.1471
+}
