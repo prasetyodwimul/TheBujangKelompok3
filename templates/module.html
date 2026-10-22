@@ -1,29 +1,144 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<p class="eyebrow">MODUL {{ kind|upper }}</p>
-<h1>{{ 'Prediksi Jenis Cacat' if kind == 'supervised' else 'Segmentasi Karakteristik Cacat' }}</h1>
-<p>Masukkan 27 fitur numerik. Nilai contoh otomatis diambil dari median dataset, <strong>bukan</strong> pengukuran produk tertentu.</p>
+
+<section class="module-header">
+    <p class="eyebrow">MODUL {{ kind|upper }}</p>
+
+    <h1>
+        {{ 'Prediksi Jenis Cacat' if kind == 'supervised'
+           else 'Segmentasi Karakteristik Cacat' }}
+    </h1>
+
+    <p class="module-description">
+        Masukkan 27 fitur numerik. Nilai contoh diambil dari median
+        dataset, bukan pengukuran produk tertentu.
+    </p>
+</section>
+
 {% if not features %}
-<div class="notice">Menunggu schema dari Orang 2. Halaman form akan aktif setelah data diproses.</div>
+<div class="notice">
+    Menunggu schema dari Orang 2. Halaman form akan aktif
+    setelah data diproses.
+</div>
 {% elif not ready %}
-<div class="notice">Schema sudah ada, tetapi model {{ kind }} belum dihasilkan.</div>
+<div class="notice">
+    Schema tersedia, tetapi model {{ kind }} belum tersedia.
+</div>
 {% endif %}
+
 {% if features %}
-<form id="prediction-form" data-kind="{{ kind }}">
-  <div class="form-grid">
-  {% for feature in features %}
-    <label>{{ feature }}
-      <input type="number" name="{{ feature }}" step="any" required value="{{ medians.get(feature, 0) }}">
-    </label>
-  {% endfor %}
-  </div>
-  <button type="submit">{{ 'Prediksi Jenis Cacat' if kind == 'supervised' else 'Cari Cluster' }}</button>
-</form>
-<pre id="result" class="result" aria-live="polite">Belum ada prediksi.</pre>
+
+<section class="form-panel">
+    <div class="panel-heading">
+        <p class="result-eyebrow">INPUT DATA</p>
+        <h2>Parameter Analisis</h2>
+        <p>Masukkan nilai fitur sebelum menjalankan model.</p>
+    </div>
+
+    <form id="prediction-form" data-kind="{{ kind }}">
+        <div class="form-grid">
+            {% for feature in features %}
+            <label class="feature-field">
+                <span>{{ feature }}</span>
+                <input
+                    type="number"
+                    name="{{ feature }}"
+                    step="any"
+                    required
+                    value="{{ medians.get(feature, 0) }}"
+                >
+            </label>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="button">
+                {{ 'Prediksi Jenis Cacat' if kind == 'supervised'
+                   else 'Cari Cluster' }}
+                →
+            </button>
+
+            <button type="reset" class="button button-secondary">
+                Reset Form
+            </button>
+        </div>
+    </form>
+</section>
+
+<section id="prediction-result" class="result-panel" hidden>
+    <div class="result-heading">
+        <div>
+            <p class="result-eyebrow">HASIL ANALISIS</p>
+            <h2 id="predicted-class">Hasil Prediksi</h2>
+            <p class="result-subtitle">
+                Hasil yang dikembalikan oleh model machine learning.
+            </p>
+        </div>
+
+        <span class="result-badge">
+            {{ 'Supervised Learning' if kind == 'supervised'
+               else 'Unsupervised Learning' }}
+        </span>
+    </div>
+
+    <div id="probability-chart-area" class="chart-card" hidden>
+        <h3>Probabilitas Kelas Teratas</h3>
+        <p class="chart-description">
+            Perbandingan probabilitas prediksi setiap kelas.
+        </p>
+
+        <div class="chart-container">
+            <canvas id="probability-chart"></canvas>
+        </div>
+
+        <p class="chart-note">
+            Probabilitas merupakan keluaran model, bukan jaminan
+            bahwa jenis cacat benar-benar terjadi.
+        </p>
+    </div>
+
+    <div id="cluster-result-area" class="cluster-card" hidden>
+        <p class="result-eyebrow">CLUSTER ASSIGNMENT</p>
+        <h3 id="cluster-title">Cluster</h3>
+        <p id="cluster-profile">Profil cluster belum tersedia.</p>
+    </div>
+
+    <div id="prediction-error" class="notice" hidden></div>
+
+
+</section>
+
 {% endif %}
-{% if kind == 'supervised' %}
-<img class="plot" src="{{ url_for('static', filename='img/supervised_confusion_matrix.png') }}" alt="Confusion matrix supervised" onerror="this.style.display='none'">
-{% else %}
-<img class="plot" src="{{ url_for('static', filename='img/unsupervised_pca.png') }}" alt="PCA hasil clustering" onerror="this.style.display='none'">
-{% endif %}
+
+<section class="existing-visualization">
+    {% if kind == 'supervised' %}
+    <div class="visualization-heading">
+        <p class="result-eyebrow">MODEL EVALUATION</p>
+        <h2>Confusion Matrix</h2>
+        <p>Visualisasi evaluasi model supervised.</p>
+    </div>
+
+    <img
+        class="plot"
+        src="{{ url_for('static', filename='img/supervised_confusion_matrix.png') }}"
+        alt="Confusion matrix supervised"
+        onerror="this.style.display='none'"
+    >
+    {% else %}
+    <div class="visualization-heading">
+        <p class="result-eyebrow">CLUSTER VISUALIZATION</p>
+        <h2>Visualisasi PCA</h2>
+        <p>Visualisasi pola pengelompokan data.</p>
+    </div>
+
+    <img
+        class="plot"
+        src="{{ url_for('static', filename='img/unsupervised_pca.png') }}"
+        alt="PCA hasil clustering"
+        onerror="this.style.display='none'"
+    >
+    {% endif %}
+</section>
+
 {% endblock %}
