@@ -1,144 +1,416 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}
+    {% if kind == "supervised" %}
+        Prediksi Jenis Cacat
+    {% else %}
+        Segmentasi Karakteristik Cacat
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 
-<section class="module-header">
-    <p class="eyebrow">MODUL {{ kind|upper }}</p>
+<style>
+    .module-page {
+        max-width: 1180px;
+        margin: auto;
+        padding: 24px 18px 44px;
+    }
 
-    <h1>
-        {{ 'Prediksi Jenis Cacat' if kind == 'supervised'
-           else 'Segmentasi Karakteristik Cacat' }}
-    </h1>
+    .module-header {
+        margin-bottom: 24px;
+    }
 
-    <p class="module-description">
-        Masukkan 27 fitur numerik. Nilai contoh diambil dari median
-        dataset, bukan pengukuran produk tertentu.
-    </p>
-</section>
+    .module-header h1 {
+        margin-bottom: 8px;
+    }
 
-{% if not features %}
-<div class="notice">
-    Menunggu schema dari Orang 2. Halaman form akan aktif
-    setelah data diproses.
-</div>
-{% elif not ready %}
-<div class="notice">
-    Schema tersedia, tetapi model {{ kind }} belum tersedia.
-</div>
-{% endif %}
+    .module-header p {
+        line-height: 1.7;
+        opacity: 0.8;
+    }
 
-{% if features %}
+    .module-card {
+        border: 1px solid rgba(128, 128, 128, 0.28);
+        border-radius: 15px;
+        padding: 22px;
+        margin-bottom: 24px;
+        background: var(--card-bg, transparent);
+    }
 
-<section class="form-panel">
-    <div class="panel-heading">
-        <p class="result-eyebrow">INPUT DATA</p>
-        <h2>Parameter Analisis</h2>
-        <p>Masukkan nilai fitur sebelum menjalankan model.</p>
-    </div>
+    .module-card h2 {
+        margin-top: 0;
+    }
 
-    <form id="prediction-form" data-kind="{{ kind }}">
-        <div class="form-grid">
-            {% for feature in features %}
-            <label class="feature-field">
-                <span>{{ feature }}</span>
-                <input
-                    type="number"
-                    name="{{ feature }}"
-                    step="any"
-                    required
-                    value="{{ medians.get(feature, 0) }}"
-                >
-            </label>
-            {% endfor %}
-        </div>
+    .module-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
 
-        <div class="form-actions">
-            <button type="submit" class="button">
-                {{ 'Prediksi Jenis Cacat' if kind == 'supervised'
-                   else 'Cari Cluster' }}
-                →
-            </button>
+    .module-field label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 7px;
+    }
 
-            <button type="reset" class="button button-secondary">
-                Reset Form
-            </button>
-        </div>
-    </form>
-</section>
+    .module-field input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 11px;
+        border: 1px solid rgba(128, 128, 128, 0.45);
+        border-radius: 8px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+    }
 
-<section id="prediction-result" class="result-panel" hidden>
-    <div class="result-heading">
-        <div>
-            <p class="result-eyebrow">HASIL ANALISIS</p>
-            <h2 id="predicted-class">Hasil Prediksi</h2>
-            <p class="result-subtitle">
-                Hasil yang dikembalikan oleh model machine learning.
+    .module-actions {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-top: 22px;
+    }
+
+    .module-button {
+        padding: 12px 20px;
+        background: #345bd6;
+        color: white;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+    }
+
+    .module-button:disabled {
+        opacity: 0.6;
+        cursor: wait;
+    }
+
+    .module-status {
+        line-height: 1.5;
+    }
+
+    .module-result[hidden] {
+        display: none;
+    }
+
+    .module-result-title {
+        font-size: 1.7rem;
+        margin-bottom: 12px;
+    }
+
+    .module-description {
+        line-height: 1.75;
+    }
+
+    .cluster-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    .cluster-card {
+        padding: 18px;
+        border: 1px solid rgba(128, 128, 128, 0.25);
+        border-radius: 12px;
+        min-width: 0;
+    }
+
+    .cluster-card h3 {
+        margin-top: 0;
+    }
+
+    .cluster-stat {
+        font-size: 0.9rem;
+        line-height: 1.7;
+        opacity: 0.85;
+        overflow-wrap: anywhere;
+    }
+
+    .cluster-faults {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .cluster-fault {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 7px;
+        background: rgba(128, 128, 128, 0.13);
+        font-size: 0.82rem;
+    }
+
+    .comparison-image {
+        display: block;
+        width: 100%;
+        max-width: 1050px;
+        height: auto;
+        margin: 20px auto 0;
+        border-radius: 10px;
+    }
+
+    .module-note {
+        font-size: 0.9rem;
+        opacity: 0.78;
+        line-height: 1.7;
+        margin-top: 16px;
+    }
+
+    #prediction-chart {
+        max-height: 360px;
+        margin-top: 18px;
+    }
+
+    @media (max-width: 780px) {
+        .module-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .cluster-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .module-page {
+            padding: 16px 12px 30px;
+        }
+
+        .module-card {
+            padding: 16px;
+        }
+
+        .module-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .module-button {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="module-page">
+
+    <header class="module-header">
+        {% if kind == "supervised" %}
+            <h1>Prediksi Jenis Cacat</h1>
+            <p>
+                Masukkan karakteristik pelat baja untuk memprediksi
+                jenis cacat beserta probabilitas dari model supervised.
             </p>
-        </div>
+        {% else %}
+            <h1>Segmentasi Karakteristik Cacat</h1>
+            <p>
+                Masukkan karakteristik pelat baja untuk mengetahui
+                cluster dengan pola fitur yang paling sesuai.
+            </p>
+        {% endif %}
+    </header>
 
-        <span class="result-badge">
-            {{ 'Supervised Learning' if kind == 'supervised'
-               else 'Unsupervised Learning' }}
-        </span>
-    </div>
-
-    <div id="probability-chart-area" class="chart-card" hidden>
-        <h3>Probabilitas Kelas Teratas</h3>
-        <p class="chart-description">
-            Perbandingan probabilitas prediksi setiap kelas.
-        </p>
-
-        <div class="chart-container">
-            <canvas id="probability-chart"></canvas>
-        </div>
-
-        <p class="chart-note">
-            Probabilitas merupakan keluaran model, bukan jaminan
-            bahwa jenis cacat benar-benar terjadi.
-        </p>
-    </div>
-
-    <div id="cluster-result-area" class="cluster-card" hidden>
-        <p class="result-eyebrow">CLUSTER ASSIGNMENT</p>
-        <h3 id="cluster-title">Cluster</h3>
-        <p id="cluster-profile">Profil cluster belum tersedia.</p>
-    </div>
-
-    <div id="prediction-error" class="notice" hidden></div>
-
-
-</section>
-
-{% endif %}
-
-<section class="existing-visualization">
-    {% if kind == 'supervised' %}
-    <div class="visualization-heading">
-        <p class="result-eyebrow">MODEL EVALUATION</p>
-        <h2>Confusion Matrix</h2>
-        <p>Visualisasi evaluasi model supervised.</p>
-    </div>
-
-    <img
-        class="plot"
-        src="{{ url_for('static', filename='img/supervised_confusion_matrix.png') }}"
-        alt="Confusion matrix supervised"
-        onerror="this.style.display='none'"
-    >
-    {% else %}
-    <div class="visualization-heading">
-        <p class="result-eyebrow">CLUSTER VISUALIZATION</p>
-        <h2>Visualisasi PCA</h2>
-        <p>Visualisasi pola pengelompokan data.</p>
-    </div>
-
-    <img
-        class="plot"
-        src="{{ url_for('static', filename='img/unsupervised_pca.png') }}"
-        alt="PCA hasil clustering"
-        onerror="this.style.display='none'"
-    >
+    {% if not ready %}
+        <section class="module-card">
+            <h2>Model belum tersedia</h2>
+            <p>
+                Artefak model belum ditemukan. Pastikan training sudah
+                dijalankan dan model tersimpan di folder <code>models</code>.
+            </p>
+        </section>
     {% endif %}
-</section>
+
+    <section class="module-card">
+        <h2>Input Karakteristik</h2>
+
+        <p class="module-note">
+            Nilai awal berasal dari schema proyek. Sesuaikan dengan
+            data yang ingin dianalisis.
+        </p>
+
+        <form
+            id="prediction-form"
+            data-kind="{{ kind }}"
+            data-api-url="{{ url_for('predict', kind=kind) }}"
+        >
+            <div class="module-grid">
+
+                {% for feature in features %}
+                    <div class="module-field">
+                        <label for="feature-{{ loop.index }}">
+                            {{ feature|replace("_", " ") }}
+                        </label>
+
+                        <input
+                            id="feature-{{ loop.index }}"
+                            name="{{ feature }}"
+                            type="number"
+                            step="any"
+                            value="{{ medians.get(feature, 0) }}"
+                            required
+                        >
+                    </div>
+                {% endfor %}
+
+            </div>
+
+            <div class="module-actions">
+                <button
+                    id="submit-button"
+                    class="module-button"
+                    type="submit"
+                    {% if not ready %}disabled{% endif %}
+                >
+                    {% if kind == "supervised" %}
+                        Prediksi Jenis Cacat →
+                    {% else %}
+                        Cari Cluster →
+                    {% endif %}
+                </button>
+
+                <span
+                    id="prediction-status"
+                    class="module-status"
+                    role="status"
+                    aria-live="polite"
+                ></span>
+            </div>
+        </form>
+    </section>
+
+    <!-- Hasil untuk kedua modul -->
+    <section
+        id="result-panel"
+        class="module-card module-result"
+        hidden
+        aria-live="polite"
+    >
+        <h2 id="result-title" class="module-result-title">
+            Hasil Analisis
+        </h2>
+
+        <p
+            id="result-summary"
+            class="module-description"
+        ></p>
+
+        {% if kind == "supervised" %}
+            <h3>Perbandingan Probabilitas</h3>
+            <canvas id="prediction-chart"></canvas>
+        {% endif %}
+    </section>
+
+    {% if kind == "unsupervised" %}
+
+        <section class="module-card">
+            <h2>Profil Setiap Cluster</h2>
+
+            <p class="module-note">
+                Profil dihitung dari karakteristik cluster pada data
+                training. Distribusi jenis cacat digunakan setelah
+                clustering selesai untuk membantu interpretasi, bukan
+                untuk membentuk cluster.
+            </p>
+
+            {% if cluster_profiles %}
+                <div class="cluster-grid">
+                    {% for cluster_key, profile in cluster_profiles|dictsort %}
+                        <article class="cluster-card">
+                            <h3>Cluster {{ profile.cluster_id }}</h3>
+
+                            <p class="module-description">
+                                {{ profile.description }}
+                            </p>
+
+                            <div class="cluster-stat">
+                                <div>
+                                    Jumlah data:
+                                    <strong>{{ profile.count }}</strong>
+                                </div>
+
+                                {% if profile.mean_pixels_area is not none %}
+                                    <div>
+                                        Rata-rata Pixels_Areas:
+                                        <strong>
+                                            {{ "%.2f"|format(profile.mean_pixels_area) }}
+                                        </strong>
+                                    </div>
+                                {% endif %}
+
+                                {% if profile.median_pixels_area is not none %}
+                                    <div>
+                                        Median Pixels_Areas:
+                                        <strong>
+                                            {{ "%.2f"|format(profile.median_pixels_area) }}
+                                        </strong>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% if profile.top_faults %}
+                                <div class="cluster-faults">
+                                    {% for fault in profile.top_faults %}
+                                        <span class="cluster-fault">
+                                            {{ fault.name }}:
+                                            {{ fault.percentage }}%
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>
+                    Profil cluster belum tersedia. Jalankan kembali
+                    training unsupervised untuk membuat profil dari data.
+                </p>
+            {% endif %}
+        </section>
+
+            {% if comparison_ready %}
+                <img
+                    class="comparison-image"
+                    src="{{ url_for(
+                        'static',
+                        filename='img/unsupervised_cluster_comparison.png'
+                    ) }}"
+                    alt="Grafik perbandingan luas area dan komposisi jenis cacat antarcluster"
+                >
+            {% else %}
+            {% endif %}
+        </section>
+
+        {% if pca_ready %}
+            <section class="module-card">
+                <h2>Visualisasi PCA</h2>
+
+                <p class="module-note">
+                    Grafik ini menunjukkan proyeksi dua dimensi data
+                    untuk memperlihatkan pengelompokan hasil K-Means.
+                </p>
+
+                <img
+                    class="comparison-image"
+                    src="{{ url_for(
+                        'static',
+                        filename='img/unsupervised_pca.png'
+                    ) }}"
+                    alt="PCA dua dimensi hasil clustering"
+                    loading="lazy"
+                >
+            </section>
+        {% endif %}
+
+
+    {% endif %}
+
+</div>
 
 {% endblock %}
