@@ -9,10 +9,10 @@ function renderPredictionResult(data) {
     const errorArea = document.getElementById("prediction-error");
     const badge = panel?.querySelector(".result-badge");
 
-    if (!panel || !title || !chartArea || !rawJson) {
-        console.error("Elemen hasil tidak ditemukan. Periksa module.html.");
-        return;
-    }
+    if (!panel || !title || !chartArea) {
+    console.error("Elemen hasil tidak ditemukan. Periksa module.html.");
+    return;
+}
 
     panel.hidden = false;
     chartArea.hidden = true;
@@ -23,8 +23,9 @@ function renderPredictionResult(data) {
         errorArea.hidden = true;
         errorArea.textContent = "";
     }
-
+if (rawJson) {
     rawJson.textContent = JSON.stringify(data, null, 2);
+}
 
     if (data.error) {
         title.textContent =
