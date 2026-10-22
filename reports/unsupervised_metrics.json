@@ -41,11 +41,81 @@
     }
   ],
   "silhouette": 0.2803,
-  "davies_bouldin": 1.2806,
-  "calinski_harabasz": 569.0076,
   "cluster_counts": {
-    "1": 1551,
-    "0": 390
+    "0": 390,
+    "1": 1551
   },
-  "adjusted_rand_index_external": 0.1471
+  "cluster_profiles": {
+    "0": {
+      "cluster_id": 0,
+      "count": 390,
+      "mean_pixels_area": 8344.51282051282,
+      "median_pixels_area": 6378.5,
+      "dominant_fault": "K_Scatch",
+      "dominant_fault_percentage": 84.61538461538461,
+      "fault_distribution_percent": {
+        "K_Scatch": 84.62,
+        "Other_Faults": 10.77,
+        "Z_Scratch": 2.05,
+        "Bumps": 1.54,
+        "Pastry": 1.03
+      },
+      "top_faults": [
+        {
+          "name": "K_Scatch",
+          "count": 330,
+          "percentage": 84.62
+        },
+        {
+          "name": "Other_Faults",
+          "count": 42,
+          "percentage": 10.77
+        },
+        {
+          "name": "Z_Scratch",
+          "count": 8,
+          "percentage": 2.05
+        }
+      ],
+      "description": "Area cacat cenderung lebih besar, didominasi K_Scatch."
+    },
+    "1": {
+      "cluster_id": 1,
+      "count": 1551,
+      "mean_pixels_area": 271.8620245003224,
+      "median_pixels_area": 129.0,
+      "dominant_fault": "Other_Faults",
+      "dominant_fault_percentage": 40.68343004513218,
+      "fault_distribution_percent": {
+        "Other_Faults": 40.68,
+        "Bumps": 25.53,
+        "Z_Scratch": 11.73,
+        "Pastry": 9.93,
+        "Stains": 4.64,
+        "K_Scatch": 3.93,
+        "Dirtiness": 3.55
+      },
+      "top_faults": [
+        {
+          "name": "Other_Faults",
+          "count": 631,
+          "percentage": 40.68
+        },
+        {
+          "name": "Bumps",
+          "count": 396,
+          "percentage": 25.53
+        },
+        {
+          "name": "Z_Scratch",
+          "count": 182,
+          "percentage": 11.73
+        }
+      ],
+      "description": "Area cacat cenderung lebih kecil, dengan jenis cacat lebih beragam seperti Other_Faults dan Bumps."
+    }
+  },
+  "adjusted_rand_index_external": 0.1471,
+  "davies_bouldin": 1.2806,
+  "calinski_harabasz": 569.0076
 }
